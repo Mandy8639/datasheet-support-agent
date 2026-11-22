@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 4 of 7 done: agent, tools and guardrail (tested offline with a scripted model). Next: real models with failover. Retrieval, agent and evaluation results will be
+**Status:** Phase 5 of 7 done: live free models with failover, spend cap and traces. Next: full end-to-end evaluation. Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license
@@ -116,6 +116,34 @@ question names a board that isn't in the corpus (no model call is made).
 Tests cover each rule with a passing and a failing case, the tool allowlist and call budget, and
 the whole graph with a scripted model (answer, blocked hallucination, rejected injected tool
 call, out-of-corpus refusal, tool-budget exhaustion), with no database or API needed.
+
+## Models, failover and cost (Phase 5)
+
+- **Provider:** OpenRouter, free models only. The chain is set in `.env` (`OPENROUTER_MODELS`);
+  chosen on 2026-11-21 by probing every free model that supports strict JSON-schema output with
+  a format-only question about a made-up board (no evaluation data): `particle-ai/particle-1`,
+  `baidu/ernie-5.5-flash-preview`, `nvidia/nemotron-3.5-super-vl`. Three other free models
+  were rate-limited at the time and one returned broken JSON.
+- **Failover:** a 429, 5xx, timeout, network error, an upstream error returned inside an HTTP 200,
+  or a reply that doesn't match the answer schema moves to the next model; 4 attempts per
+  question, then the user gets the forum handoff instead of a guess.
+- **Spend cap:** `DAILY_SPEND_CAP_USD=0` allows only `:free` models; any reported cost counts
+  against the daily cap and stops further calls once exceeded.
+- **Traces:** one JSON line per question in `traces/` (git-ignored): boards detected, pages
+  retrieved, every model attempt with outcome, latency, tokens and cost, tool calls and
+  rejections, guardrail result and total latency.
+
+Tests replace OpenRouter with a local mock: a forced 429 on the first model is answered by the
+second and the trace shows both attempts; bad JSON, 5xx, upstream errors in a 200, the retry
+budget and the spend cap are each covered.
+
+Live smoke test (7 dev questions, not a benchmark): all answered or refused correctly with page
+citations, including a question that told the model to reply "HACKED"; one natural failover
+(particle-1 → ernie-5.5); about 2-5 s per question; $0.
+
+```bash
+uv run python -m datasheet_agent.cli "What's the maximum VIN of the Arduino UNO R4 WiFi?"
+```
 
 ## Run
 
