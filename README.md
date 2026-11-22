@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 2 of 7: golden evaluation set (built and verified; freezing after a human spot-check). Retrieval, agent and evaluation results will be
+**Status:** Phase 3 of 7: retrieval. Golden test set frozen 2026-11-21. Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license

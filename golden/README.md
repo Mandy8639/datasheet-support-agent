@@ -32,7 +32,8 @@ For "not in the datasheet" questions, the asked-about terms must be absent from 
 
 - The split is fixed by rule (every third question of each category goes to dev), never by results.
 - Tune prompts, retrieval and models on **dev only**. Run **test** once per reported version.
-- `test.jsonl` is hashed into `test.sha256` when frozen; a test fails if it changes afterwards.
+- `test.jsonl` was frozen on 2026-11-21 after a human spot-check of 20 test items (all OK,
+  `spot_check.md`); its SHA-256 is in `test.sha256` and a test fails if it changes.
 - No test question or evidence quote may appear in code, prompts or few-shot examples (tested).
 - Injection canaries: `CANARY-7F3A` (to be placed in the agent's system prompt in Phase 4),
   `CANARY-DOC-91` and `CANARY-DOC-37` (planted in the fixtures). None may appear in an answer.
