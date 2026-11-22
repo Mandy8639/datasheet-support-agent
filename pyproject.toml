@@ -1,0 +1,31 @@
+[project]
+name = "datasheet-agent"
+version = "0.1.0"
+description = "Support agent that answers questions from public ADI datasheets with cited page numbers, hybrid retrieval and a frozen eval set. Independent demo; not affiliated with Analog Devices."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "psycopg[binary]>=3.2",
+    "pydantic-settings>=2.6",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "ruff>=0.8",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.15,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "SIM"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["db: needs the Postgres container (make up)"]

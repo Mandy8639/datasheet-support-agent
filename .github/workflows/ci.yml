@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: datasheet
+          POSTGRES_PASSWORD: ci-admin
+          POSTGRES_DB: datasheets
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U datasheet -d datasheets"
+          --health-interval 2s --health-timeout 3s --health-retries 30
+    env:
+      DATABASE_URL: postgresql://datasheet:ci-admin@localhost:5433/datasheets
+      AGENT_DB_PASSWORD: ci-agent
+      AGENT_DATABASE_URL: postgresql://agent_ro:ci-agent@localhost:5433/datasheets
+      POSTGRES_USER: datasheet
+      POSTGRES_DB: datasheets
+      PGPASSWORD: ci-admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - run: uv sync
+      # Service containers can't mount db/init, so run the same init script here.
+      - run: sudo apt-get install -y -q postgresql-client
+      - run: PGHOST=localhost PGPORT=5433 bash db/init/001_extensions_and_roles.sh
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest -q

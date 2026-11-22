@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.env
+# Datasheets are downloaded by scripts/download.py and never committed.
+data/raw/*
+!data/raw/.gitkeep
+data/processed/
+traces/
