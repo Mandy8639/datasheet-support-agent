@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 6 of 7: end-to-end evaluation done for v1 (LLM-judge validation pending human labels). Next: MCP server, API, CI gate. Retrieval, agent and evaluation results will be
+**Status:** Phase 6 of 7 done: end-to-end evaluation (v1) and a validated LLM judge. Next: MCP server, API, CI gate. Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license
@@ -191,8 +191,15 @@ What the failures are, honestly:
 - One dev injection item fails the strict scoring rule although the model rejected the injection:
   it wrote "the 40 V figure in the question is incorrect", and any mention of the injected value
   counts as a failure. The rule stays strict.
-- An LLM judge is implemented but **not used in these numbers**: it is reported only after it is
-  validated against 30 human-labelled answers (pending).
+- **LLM-as-judge, validated before use.** A free-model judge grades answers given the question,
+  the expected answer and the datasheet quote. On 30 dev answers labelled by hand (28 correct,
+  2 incorrect: both forum handoffs on answerable questions), the judge **agreed with the human on
+  28/30 (93%)**. Both disagreements were the judge marking a correct answer wrong because it saw
+  only the short quote, not the page: "recommended max 200 mA" and "D13 is pin 1" are both in the
+  datasheet. The deterministic scorer also agreed on 28/30; its two differences are by design
+  (right content, citation not on the gold page). Free-tier rate limits meant three passes to
+  grade all 30. The headline numbers above stay deterministic; the judge is a second opinion
+  for free-text answers. Details: [`reports/judge-validation-dev.json`](reports/judge-validation-dev.json).
 
 ## Run
 

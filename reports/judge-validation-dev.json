@@ -1,0 +1,249 @@
+{
+ "n": 30,
+ "judged": 30,
+ "judge_agrees_with_human": 28,
+ "judge_agrees_with_deterministic": 26,
+ "deterministic_agrees_with_human": 28,
+ "rows": [
+  {
+   "id": "sn01",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "The assistant states the maximum VIN/DC jack input voltage is 24 V, matching the expected answer."
+  },
+  {
+   "id": "sn04",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 7.0 V, matching the expected typical VIN value and unit with no added or conflicting figures."
+  },
+  {
+   "id": "sn07",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 7 V as the minimum VIN / DC jack input voltage, matching the expected answer with no added or contradictory figures."
+  },
+  {
+   "id": "sn10",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 5.5 V as the maximum USB connector input voltage, matching the expected value and unit with no added figures."
+  },
+  {
+   "id": "sn13",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states the expected minimum input high-level voltage of 1.815 V with no contradicting or extra figures."
+  },
+  {
+   "id": "sn16",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "nvidia/nemotron-3.5-super-vl:free",
+   "reason": "The assistant states 5000 mW, which matches the expected answer exactly."
+  },
+  {
+   "id": "sn19",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states the expected typical value of 2350 mW for a busy loop, with no contradicting or extra figures."
+  },
+  {
+   "id": "sn22",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states the minimum VIN as 3.5 V, matching the expected value and unit with no added or conflicting figures."
+  },
+  {
+   "id": "sn25",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "nvidia/nemotron-3.5-super-vl:free",
+   "reason": "The assistant correctly states the maximum battery input voltage is 4.7 V, matching the expected answer."
+  },
+  {
+   "id": "sn28",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 5.25 V as the maximum USB input voltage, matching the expected value and unit."
+  },
+  {
+   "id": "sn31",
+   "human": false,
+   "deterministic": false,
+   "judge": false,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant declined to answer and never stated the expected 32 V maximum VIN, so the required fact is missing."
+  },
+  {
+   "id": "sn34",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "nvidia/nemotron-3.5-super-vl:free",
+   "reason": "The assistant states the typical deep sleep current as 86 \u00b5A, matching the expected answer, and adds no incorrect figure."
+  },
+  {
+   "id": "sc01",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 2.7 V as the minimum output high voltage at 8 mA, matching the expected value and unit with no added figures."
+  },
+  {
+   "id": "sc04",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 3.3 V as the maximum output high voltage at 8 mA, matching the expected value and unit."
+  },
+  {
+   "id": "sc07",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 105 mA typical average current during image capture, matching the expected value and unit with no added figures."
+  },
+  {
+   "id": "sc10",
+   "human": true,
+   "deterministic": true,
+   "judge": false,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states 550 mA but adds an unsupported \"recommended maximum of 200 mA,\" which contradicts the expected 550 mA maximum and introduces a figure absent from the datasheet quote."
+  },
+  {
+   "id": "cp01",
+   "human": true,
+   "deterministic": false,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "It correctly identifies the GIGA R1 WiFi (ABX00063) as accepting the higher maximum VIN."
+  },
+  {
+   "id": "cp04",
+   "human": false,
+   "deterministic": false,
+   "judge": false,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant declined to answer instead of stating that both boards are equal at 3.5 V minimum VIN."
+  },
+  {
+   "id": "cp07",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "The assistant identifies the Portenta C33 (ABX00074) as using less deep-sleep current, matching the expected winner."
+  },
+  {
+   "id": "cp10",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant correctly identifies the Nano Every (ABX00028) as having more SRAM, citing 6 kB versus the UNO R3's 2 kB, matching the expected answer."
+  },
+  {
+   "id": "tf01",
+   "human": true,
+   "deterministic": false,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant correctly identifies the ATmega328P as the main microcontroller, matching the expected answer, and the additional mention of the ATmega16U2 is accurate and does not contradict it."
+  },
+  {
+   "id": "tf04",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The answer states the NINA W102 module, matching the expected fact, with the additional NINA-W10 series reference being consistent rather than contradictory."
+  },
+  {
+   "id": "tf07",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant correctly identifies the Murata CMWX1ZZABZ LoRa module, matching the expected answer with no contradictions or extra figures."
+  },
+  {
+   "id": "tf10",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "The answer states the nRF52832 SoC within the ANNA-B112 module, matching the expected fact."
+  },
+  {
+   "id": "tf13",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "The answer correctly identifies the LSM6DSOX 6-axis IMU on the Nicla Vision."
+  },
+  {
+   "id": "tf16",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "States both expected figures with correct units (1 MB Flash, 256 kB RAM) and does not contradict the datasheet."
+  },
+  {
+   "id": "pn01",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "baidu/ernie-5.5-flash-preview:free",
+   "reason": "The assistant states the IOREF pin is the digital logic voltage reference connected to 5V, matching the expected answer."
+  },
+  {
+   "id": "pn04",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "It identifies A0/DAC0 as the DAC-capable header pin, matching the expected A0 fact."
+  },
+  {
+   "id": "pn07",
+   "human": true,
+   "deterministic": true,
+   "judge": false,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "It correctly mentions D13 but incorrectly identifies it as pin 1, which is a wrong figure."
+  },
+  {
+   "id": "pn10",
+   "human": true,
+   "deterministic": true,
+   "judge": true,
+   "judge_model": "particle-ai/particle-1:free",
+   "reason": "The assistant correctly identifies the reset pin as P5."
+  }
+ ]
+}

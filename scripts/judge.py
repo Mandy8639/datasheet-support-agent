@@ -10,15 +10,17 @@ golden/judge_labels_dev.json. Dev only: the judge is validated before it is trus
 
 import json
 import sys
+import time
 from pathlib import Path
 
 from datasheet_agent.agent.providers import SpendTracker
 from datasheet_agent.config import get_settings
-from datasheet_agent.evals.judge import Judge, expected_text
+from datasheet_agent.evals.judge import Judge, Verdict, expected_text
 
 ROOT = Path(__file__).resolve().parents[1]
 CATS = ["spec_number", "spec_condition", "comparison", "text_fact", "pin"]
 LABELS = ROOT / "golden" / "judge_labels_dev.json"
+PAUSE_S = 4.0  # free-tier rate limits
 SHEET = ROOT / "golden" / "judge_labels_dev.md"
 # Judge order: start with a model that is last in the answering chain, to limit self-grading.
 JUDGE_MODELS = [
@@ -71,9 +73,21 @@ def score() -> None:
     human = json.loads(LABELS.read_text())["labels"]  # id -> true/false
     s = get_settings()
     judge = Judge(s.openrouter_api_key.strip(), JUDGE_MODELS, SpendTracker(s.daily_spend_cap_usd))
+    # Keep verdicts from an earlier run; only grade answers the judge couldn't reach (rate limits).
+    out_path = ROOT / "reports" / "judge-validation-dev.json"
+    previous = {}
+    if out_path.exists():
+        previous = {
+            r["id"]: r for r in json.loads(out_path.read_text())["rows"] if r["judge"] is not None
+        }
     rows, agree_h, agree_d, n = [], 0, 0, 0
     for q, r in items_and_answers():
-        v = judge.grade(q, r["answer"])
+        if q["id"] in previous:
+            p = previous[q["id"]]
+            v = Verdict(p["judge"], p["reason"], p["judge_model"])
+        else:
+            v = judge.grade(q, r["answer"])
+            time.sleep(PAUSE_S)
         h, d = human[q["id"]], r["passed"]
         if v.correct is not None:
             n += 1
@@ -98,7 +112,7 @@ def score() -> None:
         "deterministic_agrees_with_human": det_vs_h,
         "rows": rows,
     }
-    (ROOT / "reports" / "judge-validation-dev.json").write_text(json.dumps(out, indent=1))
+    out_path.write_text(json.dumps(out, indent=1))
     print(json.dumps({k: v for k, v in out.items() if k != "rows"}, indent=1))
     for r in rows:
         if r["judge"] != r["human"] or r["deterministic"] != r["human"]:

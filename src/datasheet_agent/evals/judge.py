@@ -94,6 +94,7 @@ class Judge:
                     data["choices"][0]["message"]["content"].strip().strip("`").removeprefix("json")
                 )
                 return Verdict(v["verdict"] == "correct", v["reason"], model)
-            except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError):
+            except (httpx.HTTPError, KeyError, IndexError, ValueError, TypeError, AttributeError):
+                # empty reply, error object or bad JSON: try the next judge model
                 continue
         return Verdict(None, "judge unavailable", "none")
