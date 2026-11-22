@@ -15,7 +15,8 @@ class Settings(BaseSettings):
     agent_database_url: str = "postgresql://agent_ro:change-me-agent@localhost:5433/datasheets"
 
     openrouter_api_key: str = ""
-    anthropic_api_key: str = ""
+    # Comma-separated OpenRouter model ids, tried in order (failover).
+    openrouter_models: str = ""
     daily_spend_cap_usd: float = Field(default=1.00, ge=0)
 
 
