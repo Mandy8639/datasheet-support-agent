@@ -1,4 +1,4 @@
-.PHONY: setup up down reset test lint fmt check
+.PHONY: setup up down reset download ingest test lint fmt check
 
 setup:            ## create .env from the example and install dependencies
 	@test -f .env || cp .env.example .env
@@ -12,6 +12,12 @@ down:
 
 reset:            ## drop the data volume (re-runs db/init on next up)
 	docker compose --env-file .env down -v
+
+download:         ## fetch the corpus PDFs (CC BY-SA 4.0, see data/sources.toml)
+	uv run python scripts/download.py
+
+ingest: up download  ## parse PDFs and load Postgres; writes reports/ingestion.md
+	uv run python scripts/ingest.py
 
 test:
 	uv run pytest -q

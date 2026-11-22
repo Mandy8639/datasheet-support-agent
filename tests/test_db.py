@@ -1,5 +1,7 @@
 """Phase 0 smoke tests: pgvector is installed and the agent role is read-only."""
 
+from pathlib import Path
+
 import psycopg
 import pytest
 
@@ -35,3 +37,15 @@ def test_agent_role_can_read_but_not_write():
     finally:
         with admin_conn() as conn:
             conn.execute("DROP TABLE _phase0_probe")
+
+
+def test_agent_role_reads_corpus_tables_but_cannot_modify_them():
+    schema = (Path(__file__).resolve().parents[1] / "db" / "schema.sql").read_text()
+    with admin_conn() as conn:
+        conn.execute(schema)  # idempotent; makes the test independent of `make ingest`
+    with agent_conn() as conn:
+        for table in ("documents", "pages", "doc_tables", "spec_rows", "pin_rows", "chunks"):
+            conn.execute(f"SELECT count(*) FROM {table}").fetchone()
+    with agent_conn() as conn, pytest.raises(psycopg.errors.InsufficientPrivilege):
+        conn.read_only = False
+        conn.execute("DELETE FROM chunks")

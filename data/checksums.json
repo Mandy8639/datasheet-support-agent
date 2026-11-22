@@ -1,0 +1,92 @@
+{
+  "A000066": {
+    "product": "Arduino UNO R3",
+    "sha256": "6bfbbc1b50da5ed84e7311b9639e62cc456e93e70a55d9c2e1eb9b7355212f21",
+    "bytes": 334592
+  },
+  "A000067": {
+    "product": "Arduino Mega 2560 Rev3",
+    "sha256": "3d284a09c2b0028545d18ac610f7ed455380b88f775a0d9d6bcc210f92882b0f",
+    "bytes": 791275
+  },
+  "ABX00023": {
+    "product": "Arduino MKR WiFi 1010",
+    "sha256": "4b5bdbadcabd15d83c3bdc56bb7d015936aa0fa234b0c1381b1a3a9bb9ec06c1",
+    "bytes": 469421
+  },
+  "ABX00027": {
+    "product": "Arduino Nano 33 IoT",
+    "sha256": "75302618253084d7f11560ee4bbb02fff666fbf7d9679b59a271f1b1a997ab0e",
+    "bytes": 573115
+  },
+  "ABX00028": {
+    "product": "Arduino Nano Every",
+    "sha256": "36dc9cff93a92c55d696e7da1a9e577c94659d2b60bffa108c417c712acc4773",
+    "bytes": 396301
+  },
+  "ABX00029": {
+    "product": "Arduino MKR WAN 1310",
+    "sha256": "6c9287fa21165248d4e4a56e2255a03b720b4224c3d00aa1369fe548cca9b52d",
+    "bytes": 893433
+  },
+  "ABX00030": {
+    "product": "Arduino Nano 33 BLE Sense",
+    "sha256": "8961d9521736e08192e1c52b6e321262c627c1c855ca8115e399f2eaf0658fc8",
+    "bytes": 355148
+  },
+  "ABX00043": {
+    "product": "Arduino Portenta Max Carrier",
+    "sha256": "4f8c32ad687e99745eb216031fc88a67c72765274152a7fd7539ea07785b7aa6",
+    "bytes": 1128331
+  },
+  "ABX00049": {
+    "product": "Arduino Portenta X8",
+    "sha256": "49a28c537356165fefe5fa94e28dc706d78f8ec499ce7a02787e9dbf2f8612b6",
+    "bytes": 2191512
+  },
+  "ABX00050": {
+    "product": "Arduino Nicla Sense ME",
+    "sha256": "05ad44f8e75be1fe58d35faea9c9bf75fb9f2e5b0392a8b2b6b93d4107d497e0",
+    "bytes": 2067919
+  },
+  "ABX00051": {
+    "product": "Arduino Nicla Vision",
+    "sha256": "ead03c6912ee730a531b93dacf40df451863f771952df237e9058cc4c99a2520",
+    "bytes": 3175219
+  },
+  "ABX00053": {
+    "product": "Arduino Nano RP2040 Connect",
+    "sha256": "098dca0aa251d4ec04cc2bc35880b288ae08041c02ce539f3529def9cf8c22b9",
+    "bytes": 465576
+  },
+  "ABX00063": {
+    "product": "Arduino GIGA R1 WiFi",
+    "sha256": "1f1d316b34cf3b7a4b6a3a52a89a3a63537b21012370bb8e610eb66839674c2e",
+    "bytes": 2061521
+  },
+  "ABX00071": {
+    "product": "Arduino Nano 33 BLE Rev2",
+    "sha256": "77c14ad99c8920bd5df1eab07022d622d7560876c5ca7a5e0ef13fde0ef22d59",
+    "bytes": 1311453
+  },
+  "ABX00074": {
+    "product": "Arduino Portenta C33",
+    "sha256": "5aa242f349f5c462ff6376f00352cdb23d8ceaa95a704a50628f59541b08188b",
+    "bytes": 2126382
+  },
+  "ABX00080": {
+    "product": "Arduino UNO R4 Minima",
+    "sha256": "cbe84210e969770f98750c24a8eb410df851a7ef8066a980f960710ba60627d4",
+    "bytes": 1170352
+  },
+  "ABX00083": {
+    "product": "Arduino Nano ESP32",
+    "sha256": "ce5789af64942894c0b8d8fac1d5c6c022cae38c827f789c566a2830c861c32d",
+    "bytes": 1255557
+  },
+  "ABX00087": {
+    "product": "Arduino UNO R4 WiFi",
+    "sha256": "715266a66607dd106256fab0d2344f79e5fed86e70673f4a84f6964e937e539d",
+    "bytes": 3455033
+  }
+}

@@ -1,0 +1,109 @@
+# Corpus: Arduino's own product datasheets.
+#
+# License: Arduino documentation is licensed CC BY-SA 4.0
+#   (https://github.com/arduino/docs-content, LICENSE: CC-BY-SA-4.0; footer of every docs.arduino.cc page).
+# Arduino's Terms and Conditions (s.8) exclude content "made available pursuant to ... Creative Commons"
+# licenses from their copying restrictions, and docs.arduino.cc/robots.txt allows all agents.
+# Checked 2026-11-21.
+#
+# Only Arduino-authored datasheets are listed. Third-party chip datasheets that appear in the
+# docs-content repo's assets/ folders (ST, TI, Analog Devices, ...) are NOT under that license and
+# must never be added here.
+#
+# The PDFs are downloaded by scripts/download.py into data/raw/ and are not committed.
+
+license = "CC-BY-SA-4.0"
+attribution = "Datasheets © Arduino S.r.l., licensed under CC BY-SA 4.0"
+source_repo = "https://github.com/arduino/docs-content"
+source_commit = "65d578fc7de8"  # pinned 2026-11-21; each source_md is the CC BY-SA original of its PDF
+url_template = "https://docs.arduino.cc/resources/datasheets/{sku}-datasheet.pdf"
+
+[[datasheet]]
+sku = "A000066"
+product = "Arduino UNO R3"
+source_md = "content/hardware/uno/boards/uno-rev3/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "A000067"
+product = "Arduino Mega 2560 Rev3"
+source_md = "content/hardware/mega/boards/mega-2560/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00087"
+product = "Arduino UNO R4 WiFi"
+source_md = "content/hardware/uno/boards/uno-r4-wifi/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00080"
+product = "Arduino UNO R4 Minima"
+source_md = "content/hardware/uno/boards/uno-r4-minima/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00028"
+product = "Arduino Nano Every"
+source_md = "content/hardware/nano/boards/nano-every/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00027"
+product = "Arduino Nano 33 IoT"
+source_md = "content/hardware/nano/boards/nano-33-iot/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00071"
+product = "Arduino Nano 33 BLE Rev2"
+source_md = "content/hardware/nano/boards/nano-33-ble-rev2/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00083"
+product = "Arduino Nano ESP32"
+source_md = "content/hardware/nano/boards/nano-esp32/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00053"
+product = "Arduino Nano RP2040 Connect"
+source_md = "content/hardware/nano/boards/nano-rp2040-connect/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00023"
+product = "Arduino MKR WiFi 1010"
+source_md = "content/hardware/mkr/01.boards/mkr-wifi-1010/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00029"
+product = "Arduino MKR WAN 1310"
+source_md = "content/hardware/mkr/01.boards/mkr-wan-1310/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00074"
+product = "Arduino Portenta C33"
+source_md = "content/hardware/pro/boards/portenta-c33/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00050"
+product = "Arduino Nicla Sense ME"
+source_md = "content/hardware/nicla/boards/nicla-sense-me/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00051"
+product = "Arduino Nicla Vision"
+source_md = "content/hardware/nicla/boards/nicla-vision/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00063"
+product = "Arduino GIGA R1 WiFi"
+source_md = "content/hardware/mega/boards/giga-r1-wifi/datasheet/en-datasheet.md"
+
+[[datasheet]]
+sku = "ABX00049"
+product = "Arduino Portenta X8"
+source_md = "content/hardware/pro/boards/portenta-x8/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00030"
+product = "Arduino Nano 33 BLE Sense"
+source_md = "content/hardware/nano/boards/nano-33-ble/datasheet/datasheet.md"
+
+[[datasheet]]
+sku = "ABX00043"
+product = "Arduino Portenta Max Carrier"
+source_md = "content/hardware/pro/carriers/portenta-max-carrier/datasheet/datasheet.md"

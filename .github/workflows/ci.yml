@@ -33,6 +33,12 @@ jobs:
       # Service containers can't mount db/init, so run the same init script here.
       - run: sudo apt-get install -y -q postgresql-client
       - run: PGHOST=localhost PGPORT=5433 bash db/init/001_extensions_and_roles.sh
+      # Corpus PDFs are not committed; fetch once and cache by checksum file.
+      - uses: actions/cache@v4
+        with:
+          path: data/raw
+          key: corpus-${{ hashFiles('data/checksums.json') }}
+      - run: uv run python scripts/download.py
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
