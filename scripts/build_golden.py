@@ -91,7 +91,7 @@ def verify(q: dict, pages: dict, md: dict, fixtures: dict) -> list[str]:
         if not hit:
             problems.append(f"{sku}: evidence not on any PDF page: {g['evidence']!r}")
             continue
-        g["pages"] = hit
+        g["pages"] = sorted(hit)
         nums = g.get("numbers", answer_numbers(q["answer"]) if len(q["gold"]) == 1 else [])
         for value in nums:
             if not any(contains_number(doc_pages[n], value) for n in hit):
@@ -132,6 +132,20 @@ def load_sources() -> tuple[dict, dict, dict]:
     return pages, md, fixtures
 
 
+def _canonical(q: dict) -> str:
+    q = json.loads(json.dumps(q))
+    for g in q.get("gold", []):
+        g["pages"] = sorted(g.get("pages", []))
+    return json.dumps(q, ensure_ascii=False, sort_keys=True)
+
+
+def check_frozen(rows: list[dict]) -> None:
+    frozen = [json.loads(x) for x in (GOLDEN / "test.jsonl").read_text().splitlines()]
+    if sorted(map(_canonical, rows)) != sorted(map(_canonical, frozen)):
+        raise SystemExit("questions.yaml no longer matches the frozen golden/test.jsonl")
+    print("frozen test set: rebuild matches (not rewritten)")
+
+
 def main() -> int:
     items = yaml.safe_load((GOLDEN / "questions.yaml").read_text())["questions"]
     pages, md, fixtures = load_sources()
@@ -156,8 +170,13 @@ def main() -> int:
         print(f"{len(failures)} of {len(items)} questions failed verification")
         return 1
 
+    frozen = (GOLDEN / "test.sha256").exists()
     for split in ("dev", "test"):
         rows = [q for q in items if q["split"] == split]
+        if split == "test" and frozen:
+            # Never rewrite a frozen test set; only confirm the rebuild agrees with it.
+            check_frozen(rows)
+            continue
         with (GOLDEN / f"{split}.jsonl").open("w") as f:
             for q in rows:
                 f.write(json.dumps(q, ensure_ascii=False, sort_keys=True) + "\n")

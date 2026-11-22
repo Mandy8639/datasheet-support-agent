@@ -3,9 +3,11 @@
 Re-running replaces a document's rows, so the database always matches data/raw/.
 Writes reports/ingestion.md with per-datasheet counts.
 
-    uv run python scripts/ingest.py
+    uv run python scripts/ingest.py            # reload every document
+    uv run python scripts/ingest.py --rebuild  # drop and recreate the corpus tables first
 """
 
+import argparse
 import json
 import sys
 import tomllib
@@ -105,9 +107,20 @@ def ingest_one(conn, cfg: dict, ds: dict, checksums: dict) -> dict:
 
     with conn.cursor() as cur:
         cur.executemany(
-            """INSERT INTO chunks (doc_id, page_no, page_end, section, kind, text)
-               VALUES (%s, %s, %s, %s, %s, %s)""",
-            [(doc_id, c.page_no, c.page_end, c.section, c.kind, c.text) for c in chunks],
+            """INSERT INTO chunks (doc_id, page_no, page_end, section, kind, text, search_text)
+               VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+            [
+                (
+                    doc_id,
+                    c.page_no,
+                    c.page_end,
+                    c.section,
+                    c.kind,
+                    c.text,
+                    f"{ds['product']} | {c.section}\n{c.text}",
+                )
+                for c in chunks
+            ],
         )
 
     return {
@@ -188,9 +201,14 @@ def write_report(results: list[dict]) -> Path:
 
 
 def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--rebuild", action="store_true", help="drop and recreate corpus tables")
+    args = ap.parse_args()
     cfg = tomllib.loads((ROOT / "data" / "sources.toml").read_text())
     checksums = json.loads((ROOT / "data" / "checksums.json").read_text())
     with admin_conn() as conn:
+        if args.rebuild:
+            conn.execute((ROOT / "db" / "drop_corpus.sql").read_text())
         conn.execute((ROOT / "db" / "schema.sql").read_text())
         results = []
         for ds in cfg["datasheet"]:

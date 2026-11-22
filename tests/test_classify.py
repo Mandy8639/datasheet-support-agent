@@ -21,3 +21,22 @@ from datasheet_agent.ingest.pdf import classify
 )
 def test_classify(header, kind):
     assert classify(header, []) == kind
+
+
+@pytest.mark.parametrize(
+    ("line", "is_toc"),
+    [
+        ("15.1 Declaration of Conformity CE DoC (EU) 19", True),
+        ("10 Revision History 16", True),
+        ("19 Change Log 22", True),
+        ("5.8 Board Recovery 15", True),
+        ("2 Recommended Operating Conditions", False),  # a heading has no page number
+        ("1x 16-bit Timer/Counter with input capture", False),
+        ("12 channel DMA", False),
+        ("3 Block Diagram 99", False),  # 99 is beyond the page count
+    ],
+)
+def test_toc_line_detection(line, is_toc):
+    from datasheet_agent.ingest.pdf import _is_toc_line
+
+    assert _is_toc_line(line, page_count=24) is is_toc

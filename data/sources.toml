@@ -21,89 +21,107 @@ url_template = "https://docs.arduino.cc/resources/datasheets/{sku}-datasheet.pdf
 [[datasheet]]
 sku = "A000066"
 product = "Arduino UNO R3"
+aliases = ["UNO R3", "UNO Rev3", "Arduino UNO"]
 source_md = "content/hardware/uno/boards/uno-rev3/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "A000067"
 product = "Arduino Mega 2560 Rev3"
+aliases = ["Mega 2560 Rev3", "Mega 2560", "Arduino Mega"]
 source_md = "content/hardware/mega/boards/mega-2560/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00087"
 product = "Arduino UNO R4 WiFi"
+aliases = ["UNO R4 WiFi", "R4 WiFi"]
 source_md = "content/hardware/uno/boards/uno-r4-wifi/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00080"
 product = "Arduino UNO R4 Minima"
+aliases = ["UNO R4 Minima", "R4 Minima"]
 source_md = "content/hardware/uno/boards/uno-r4-minima/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00028"
 product = "Arduino Nano Every"
+aliases = ["Nano Every"]
 source_md = "content/hardware/nano/boards/nano-every/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00027"
 product = "Arduino Nano 33 IoT"
+aliases = ["Nano 33 IoT"]
 source_md = "content/hardware/nano/boards/nano-33-iot/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00071"
 product = "Arduino Nano 33 BLE Rev2"
+aliases = ["Nano 33 BLE Rev2"]
 source_md = "content/hardware/nano/boards/nano-33-ble-rev2/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00083"
 product = "Arduino Nano ESP32"
+aliases = ["Nano ESP32"]
 source_md = "content/hardware/nano/boards/nano-esp32/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00053"
 product = "Arduino Nano RP2040 Connect"
+aliases = ["Nano RP2040 Connect", "RP2040 Connect"]
 source_md = "content/hardware/nano/boards/nano-rp2040-connect/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00023"
 product = "Arduino MKR WiFi 1010"
+aliases = ["MKR WiFi 1010"]
 source_md = "content/hardware/mkr/01.boards/mkr-wifi-1010/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00029"
 product = "Arduino MKR WAN 1310"
+aliases = ["MKR WAN 1310"]
 source_md = "content/hardware/mkr/01.boards/mkr-wan-1310/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00074"
 product = "Arduino Portenta C33"
+aliases = ["Portenta C33"]
 source_md = "content/hardware/pro/boards/portenta-c33/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00050"
 product = "Arduino Nicla Sense ME"
+aliases = ["Nicla Sense ME"]
 source_md = "content/hardware/nicla/boards/nicla-sense-me/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00051"
 product = "Arduino Nicla Vision"
+aliases = ["Nicla Vision"]
 source_md = "content/hardware/nicla/boards/nicla-vision/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00063"
 product = "Arduino GIGA R1 WiFi"
+aliases = ["GIGA R1 WiFi", "GIGA R1", "GIGA"]
 source_md = "content/hardware/mega/boards/giga-r1-wifi/datasheet/en-datasheet.md"
 
 [[datasheet]]
 sku = "ABX00049"
 product = "Arduino Portenta X8"
+aliases = ["Portenta X8"]
 source_md = "content/hardware/pro/boards/portenta-x8/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00030"
-product = "Arduino Nano 33 BLE Sense"
+product = "Arduino Nano 33 BLE"
+aliases = ["Nano 33 BLE"]
 source_md = "content/hardware/nano/boards/nano-33-ble/datasheet/datasheet.md"
 
 [[datasheet]]
 sku = "ABX00043"
 product = "Arduino Portenta Max Carrier"
+aliases = ["Portenta Max Carrier", "Max Carrier"]
 source_md = "content/hardware/pro/carriers/portenta-max-carrier/datasheet/datasheet.md"

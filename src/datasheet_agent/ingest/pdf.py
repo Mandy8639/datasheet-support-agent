@@ -17,7 +17,8 @@ from datasheet_agent.ingest.units import clean_cell
 
 HEADER_MAX_TOP = 70
 FOOTER_MIN_TOP = 780
-_TOC_LINE = re.compile(r"^\d+(\.\d+)*\s+.+\s\d+$")
+_TOC_LINE = re.compile(r"^\d+(\.\d+)*\s+.+\s(\d+)$")
+TOC_SEARCH_PAGES = 5  # partial tables of contents only appear near the front
 
 
 @dataclass
@@ -106,6 +107,11 @@ def classify(header: list[str], rows: list[list[str]]) -> str:
     return "other"
 
 
+def _is_toc_line(text: str, page_count: int) -> bool:
+    m = _TOC_LINE.match(text.strip())
+    return bool(m) and 1 <= int(m.group(2)) <= page_count
+
+
 def _is_toc(lines: list[str]) -> bool:
     body = [t for t in lines if t.strip()]
     return len(body) >= 8 and sum(bool(_TOC_LINE.match(t)) for t in body) / len(body) > 0.5
@@ -137,6 +143,10 @@ def parse_pdf(path: Path) -> ParsedDoc:
             if _is_toc([ln["text"] for ln in lines]):
                 toc_pages.append(page_no)
                 continue
+            if page_no <= TOC_SEARCH_PAGES:
+                # A table of contents can share a page with real content; drop its lines
+                # ("15.1 Declaration of Conformity 19") when the trailing number is a real page.
+                lines = [ln for ln in lines if not _is_toc_line(ln["text"], len(pdf.pages))]
 
             # Walk lines and tables top to bottom so each table gets the heading above it.
             events = [("line", ln["top"], ln) for ln in lines]

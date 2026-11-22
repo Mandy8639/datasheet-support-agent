@@ -69,7 +69,10 @@ CREATE TABLE IF NOT EXISTS chunks (
     section    text NOT NULL,
     kind       text NOT NULL,        -- text | table
     text       text NOT NULL,
-    tsv        tsvector GENERATED ALWAYS AS (to_tsvector('english', section || ' ' || text)) STORED,
+    -- "product | section" + text: what full-text search and embeddings see, so a chunk that only
+    -- says "Input voltage from VIN pad" still carries which board it belongs to.
+    search_text text NOT NULL,
+    tsv        tsvector GENERATED ALWAYS AS (to_tsvector('english', search_text)) STORED,
     embedding  vector(384)
 );
 
