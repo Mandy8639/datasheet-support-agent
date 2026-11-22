@@ -42,3 +42,11 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run pytest -q
+      # Quality gate: build the index and check retrieval on the dev split (no model API calls).
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface
+          key: hf-bge-small-en-v1.5-bge-reranker-base
+      - run: uv run python scripts/ingest.py
+      - run: uv run python scripts/embed.py
+      - run: uv run python scripts/gate.py

@@ -1,9 +1,86 @@
 # Datasheet Support Agent
 
-Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
-for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
+A support agent that answers engineers' questions about hardware from the product datasheets,
+citing the datasheet page for every number, and refusing (with a pointer to the vendor forum)
+when the datasheet doesn't say. Built over 18 openly licensed Arduino datasheets, with a frozen,
+human-checked evaluation set.
 
-**Status:** Phase 6 of 7 done: end-to-end evaluation (v2: 74/77 on the frozen test split) and a validated LLM judge. Next: MCP server, API, CI gate.
+**Results on the frozen test split (77 questions, run once per version, $0 on free models):**
+
+| | Plain RAG baseline | This agent (v2) |
+|---|---:|---:|
+| Questions passed (right content **and** a correct page citation) | 61/77 (79%) | **74/77 (96%)** |
+| Answerable questions refused | 24% | **2%** |
+| Answered a question the datasheet doesn't answer | 0/14 | **0/14** |
+| Prompt-injection items (in the question, and planted in documents) | 8/8 | **8/8** |
+| Retrieval recall@10 (every gold page, both boards for comparisons) | | **1.000** |
+
+The LLM judge used as a second opinion agrees with human labels on 28/30 answers. Every number is
+reported with its denominator, and the failures are listed below; [`reports/demo.md`](reports/demo.md)
+has real runs.
+
+> Independent demo built on public datasheets. Not affiliated with or endorsed by Arduino.
+> Datasheets are downloaded by a script and are not redistributed in this repository.
+
+## How it works
+
+```mermaid
+flowchart LR
+    Q[Question] --> U[Understand<br/>boards named? known?]
+    U -- board not in corpus --> R[Refuse + forum handoff]
+    U --> S[Retrieve<br/>per board: full-text + pgvector,<br/>RRF, cross-encoder rerank]
+    S --> M[Free LLM chain<br/>strict JSON answer + citations<br/>failover on 429/5xx/bad JSON]
+    M -- tool request --> T[Allowlisted read-only tools<br/>search / get_spec / get_page]
+    T --> M
+    M --> G[Deterministic guardrail R1-R7<br/>numbers on cited pages, right board,<br/>no links, no prompt leak]
+    G -- pass --> A[Answer with page citations]
+    G -- violation --> R
+```
+
+- Postgres 16 + pgvector holds pages, classified tables, spec rows, pin rows and page-bounded
+  chunks; the agent connects with a read-only role.
+- The same tools and guarded `ask` are exposed as an **MCP server** and an **HTTP API**.
+- Every question writes a JSONL trace: retrieved pages, each model attempt (outcome, latency,
+  tokens, cost), tool calls and rejections, guardrail result.
+- CI runs lint, 148 tests and a **retrieval quality gate** on the dev split (fails if recall@5 or
+  MRR@10 drops more than 2 points); it never touches the frozen test split.
+
+## Quickstart
+
+```bash
+make ingest                      # Postgres + pgvector (Docker), download corpus, parse, embed
+cp .env.example .env             # then put your OpenRouter key in OPENROUTER_API_KEY
+uv run python -m datasheet_agent.cli "What's the maximum VIN of the Arduino UNO R4 WiFi?"
+```
+
+MCP server (stdio), e.g. in a client config:
+
+```json
+{"mcpServers": {"datasheets": {"command": "uv", "args": ["run", "python", "-m",
+  "datasheet_agent.mcp_server"], "cwd": "/path/to/datasheet-support-agent"}}}
+```
+
+HTTP API:
+
+```bash
+uv run uvicorn datasheet_agent.api:app --port 8000
+curl -s localhost:8000/ask -H 'content-type: application/json' \
+  -d '{"question": "Which Nano Every pin is I2C SDA?"}'
+```
+
+## Limits
+
+- **Text only.** Graphs, schematics, pinout drawings and mechanical drawings are not read; a
+  question whose answer is only in a figure is refused.
+- **Free models are rate-limited.** On one test run 5 of 77 questions failed because every free
+  model in the chain was unavailable; the agent hands off rather than guesses. A paid fallback
+  model would fix this and is supported by the spend cap.
+- **Small corpus**: 18 datasheets, 343 pages. Retrieval was not tested at thousands of documents.
+- **Reranking is slow on CPU** (about 2 s per question on a laptop).
+- **Datasheets change.** Arduino revises PDFs; the checksum check fails on purpose when one changes,
+  because gold page numbers could shift.
+- **One run per version.** Free models vary run to run, so differences of a few questions between
+  versions are within that variation.
 
 ## Corpus and license
 
@@ -205,7 +282,7 @@ What the numbers do and don't say:
   grade all 30. The headline numbers above stay deterministic; the judge is a second opinion
   for free-text answers. Details: [`reports/judge-validation-dev.json`](reports/judge-validation-dev.json).
 
-## Run
+## Commands
 
 ```bash
 make ingest   # starts Postgres + pgvector, downloads the corpus, loads it
@@ -215,3 +292,11 @@ uv run python scripts/eval_e2e.py --split dev   # end-to-end eval (test: once pe
 ```
 
 The agent connects with a read-only database role (`agent_ro`); a test checks it cannot write.
+
+## Build log
+
+Built in seven phases, each ending with tests and a commit: skeleton; corpus and ingestion;
+golden set (frozen after a human spot-check); retrieval ablation; agent, tools and guardrail;
+models, failover and traces; end-to-end evaluation (v1, then v2 with page-bounded chunks); MCP
+server, API and CI gate. Corpus note: the chip vendor first targeted prohibits automated download
+and data extraction in its website terms, so openly licensed datasheets were used instead.

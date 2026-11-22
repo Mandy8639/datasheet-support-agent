@@ -1,0 +1,8 @@
+{
+ "split": "dev",
+ "variant": "per_board",
+ "n": 34,
+ "recall@5": 0.9412,
+ "recall@10": 0.9412,
+ "mrr@10": 0.7887
+}

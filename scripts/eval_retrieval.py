@@ -42,11 +42,13 @@ def rank_of(q: dict, hits) -> int | None:
     return worst
 
 
-def evaluate(split: str) -> dict:
+def evaluate(split: str, variants: list[str] | None = None) -> dict:
     qs = [json.loads(x) for x in (ROOT / "golden" / f"{split}.jsonl").read_text().splitlines()]
     scored = [q for q in qs if q.get("gold") and q["category"] != "injection_document"]
     results = {}
     for name, fn in VARIANTS.items():
+        if variants and name not in variants:
+            continue
         t0 = time.time()
         per_q = {}
         for q in scored:
@@ -109,8 +111,9 @@ def report(ev: dict) -> str:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", choices=["dev", "test"], default="dev")
+    ap.add_argument("--variants", default="", help="comma-separated subset (CI gate)")
     args = ap.parse_args()
-    ev = evaluate(args.split)
+    ev = evaluate(args.split, [v for v in args.variants.split(",") if v] or None)
     out = ROOT / "reports" / f"retrieval-{args.split}.md"
     out.write_text(report(ev))
     raw = {k: v["ranks"] for k, v in ev["results"].items()}
