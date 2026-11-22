@@ -1,4 +1,4 @@
-.PHONY: setup up down reset download ingest test lint fmt check
+.PHONY: setup up down reset download ingest golden test lint fmt check
 
 setup:            ## create .env from the example and install dependencies
 	@test -f .env || cp .env.example .env
@@ -18,6 +18,9 @@ download:         ## fetch the corpus PDFs (CC BY-SA 4.0, see data/sources.toml)
 
 ingest: up download  ## parse PDFs and load Postgres; writes reports/ingestion.md
 	uv run python scripts/ingest.py
+
+golden:           ## verify questions.yaml against the PDFs and markdown originals; write dev/test
+	uv run python scripts/build_golden.py
 
 test:
 	uv run pytest -q

@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 1 of 7: corpus and ingestion. Retrieval, agent and evaluation results will be
+**Status:** Phase 2 of 7: golden evaluation set (built and verified; freezing after a human spot-check). Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license
@@ -39,6 +39,14 @@ Current counts: [`reports/ingestion.md`](reports/ingestion.md) (343 pages, 112 s
 
 Check: `tests/test_spec_extraction.py` compares 21 parsed spec rows with values copied by hand from
 Arduino's markdown originals, so the parser is checked against an independent source (21/21 pass).
+
+## Golden set (Phase 2)
+
+120 hand-written questions (43 dev, 77 test) across spec numbers, conditional specs, comparisons,
+text facts, pins, refusals (not in the datasheet, TBC, board not in corpus) and prompt injection
+(in the question, and planted inside synthetic test-only documents). Every answer is verified
+against both the PDF page and Arduino's markdown original before it can enter the set. See
+[`golden/README.md`](golden/README.md).
 
 ## Run
 

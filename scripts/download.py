@@ -19,6 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT / "data" / "sources.toml"
 RAW = ROOT / "data" / "raw"
+MD = ROOT / "data" / "source_md"  # CC BY-SA markdown originals, used to verify the golden set
 CHECKSUMS = ROOT / "data" / "checksums.json"
 USER_AGENT = "datasheet-support-agent/0.1 (open-source research demo)"
 
@@ -68,6 +69,19 @@ def main() -> int:
             problems += 1
             continue
         known[sku] = {"product": ds["product"], "sha256": digest, "bytes": dest.stat().st_size}
+
+    # Markdown originals at the pinned commit (independent check for scripts/build_golden.py).
+    MD.mkdir(parents=True, exist_ok=True)
+    for ds in cfg["datasheet"]:
+        dest = MD / f"{ds['sku']}.md"
+        if not dest.exists():
+            url = (
+                f"https://raw.githubusercontent.com/arduino/docs-content/"
+                f"{cfg['source_commit']}/{ds['source_md']}"
+            )
+            req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+            with urllib.request.urlopen(req, timeout=60) as resp:
+                dest.write_bytes(resp.read())
 
     CHECKSUMS.write_text(json.dumps(dict(sorted(known.items())), indent=2) + "\n")
     print(f"{len(cfg['datasheet'])} datasheets, {problems} problems")
