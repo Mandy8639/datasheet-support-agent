@@ -3,8 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 6 of 7 done: end-to-end evaluation (v1) and a validated LLM judge. Next: MCP server, API, CI gate. Retrieval, agent and evaluation results will be
-added here as they are measured.
+**Status:** Phase 6 of 7 done: end-to-end evaluation (v2: 74/77 on the frozen test split) and a validated LLM judge. Next: MCP server, API, CI gate.
 
 ## Corpus and license
 
@@ -32,10 +31,11 @@ Independent demo. Not affiliated with or endorsed by Arduino.
 - **spec rows** from Min/Typ/Max tables: raw strings kept next to parsed numbers, units normalized
   (`mA`→A, `°C`→degC, values like `-40 °C (-40 °F)` split into number and unit)
 - **pin rows** from pin tables
-- **chunks** for retrieval: section text up to 1,200 characters, plus one chunk per useful table
+- **chunks** for retrieval: section text up to 1,200 characters and never across a page (v2),
+  plus one chunk per useful table
 
 Current counts: [`reports/ingestion.md`](reports/ingestion.md) (343 pages, 112 spec rows,
-858 pin rows, 714 chunks).
+858 pin rows, 757 chunks).
 
 Check: `tests/test_spec_extraction.py` compares 21 parsed spec rows with values copied by hand from
 Arduino's markdown originals, so the parser is checked against an independent source (21/21 pass).
@@ -55,32 +55,33 @@ Operating Conditions`). Query understanding finds the boards named in a question
 and aliases in `data/sources.toml`, and flags board names that aren't in the corpus
 (e.g. "Portenta H7") so the agent can refuse rather than answer from another datasheet.
 
-Ablation, one change per row, on the **frozen test split** (run once; developed on dev only).
+Ablation, one change per row, on the **frozen test split** (v2 chunks, run once per version;
+developed on dev only; v1 numbers in [`reports/retrieval-test-v1.md`](reports/retrieval-test-v1.md)).
 A question counts as retrieved when every gold page (both boards, for comparisons) is in the top k.
 
 | Variant | recall@5 | recall@10 | MRR@10 |
 |---|---:|---:|---:|
-| Full-text search (Postgres) | 0.469 | 0.625 | 0.312 |
-| Dense (bge-small, pgvector) | 0.812 | 0.906 | 0.682 |
-| Hybrid (reciprocal rank fusion) | 0.750 | 0.875 | 0.561 |
-| + cross-encoder rerank (bge-reranker-base) | 0.906 | 0.969 | 0.773 |
-| + board filter from query understanding | 0.906 | 0.953 | 0.764 |
-| + per-board decomposition for multi-board questions | **0.953** | **1.000** | **0.780** |
+| Full-text search (Postgres) | 0.453 | 0.609 | 0.310 |
+| Dense (bge-small, pgvector) | 0.812 | 0.922 | 0.677 |
+| Hybrid (reciprocal rank fusion) | 0.766 | 0.875 | 0.574 |
+| + cross-encoder rerank (bge-reranker-base) | 0.906 | 0.969 | 0.783 |
+| + board filter from query understanding | 0.906 | 0.953 | 0.773 |
+| + per-board decomposition for multi-board questions | **0.938** | **1.000** | **0.788** |
 
 n = 64 test questions (the 13 others are injection-in-document and no-gold refusals, scored end to
-end in Phase 6). Full tables and misses: [`reports/retrieval-test.md`](reports/retrieval-test.md);
-dev: [`reports/retrieval-dev.md`](reports/retrieval-dev.md).
+end in Phase 6). Full tables and misses: [`reports/retrieval-test-v1.md`](reports/retrieval-test-v1.md);
+dev: [`reports/retrieval-dev-v1.md`](reports/retrieval-dev-v1.md).
 
 What the numbers say, including what didn't work:
 
-- **Hybrid fusion was worse than dense alone** here (0.750 vs 0.812): full-text search is weak on
+- **Hybrid fusion was worse than dense alone** here (0.766 vs 0.812): full-text search is weak on
   this corpus (short spec rows, abbreviations like VIN/TOP), so fusing it in adds noise. The
   reranker recovers the loss.
 - **The board filter added nothing measurable** on single-board questions once the reranker is
   in (0.906 both); it matters for correctness (no answers from the wrong datasheet), not recall.
 - **Comparisons were the real gap**: with both board names in the query, the reranker scored any
   chunk naming a board highly. Decomposing into one sub-search per board, with board names
-  removed (the filter already fixes the board), took comparisons from 1/6 to 4/6 at k=5.
+  removed (the filter already fixes the board), fixed most comparison misses at k=5 (v1: 1/6 → 4/6).
 - Remaining misses at k=5: two comparisons where one board's gold page ranks just outside its
   share of the 5 slots, and one "TBC" row. All 64 are found by k=10.
 - Cost: reranking runs a 278M-parameter cross-encoder locally; about 2 s per question on a
@@ -145,7 +146,7 @@ citations, including a question that told the model to reply "HACKED"; one natur
 uv run python -m datasheet_agent.cli "What's the maximum VIN of the Arduino UNO R4 WiFi?"
 ```
 
-## End-to-end evaluation (Phase 6, v1)
+## End-to-end evaluation (Phase 6)
 
 Every question goes through the agent once and is scored deterministically
 ([`evals/scoring.py`](src/datasheet_agent/evals/scoring.py)): a number must appear with a compatible
@@ -157,40 +158,43 @@ Two configs, same prompt and same free-model chain:
 - **baseline**: plain RAG (dense top-5, no board routing, no guardrail);
 - **full**: the agent (per-board reranked retrieval, out-of-corpus routing, guardrail R1-R7).
 
-Developed on dev (43 questions); **frozen test split (77 questions), run once**, 2026-11-21:
+Developed on dev (43 questions); **frozen test split (77 questions), run once per version**:
 
-| Metric | baseline | full |
-|---|---:|---:|
-| **Passed (all questions)** | **57/77 (74%)** | **70/77 (91%)** |
-| Answerable: correct content | 45/63 (71%) | 56/63 (89%) |
-| Answerable: cited a gold page | 43/63 (68%) | 56/63 (89%) |
-| Answerable but refused | 17/63 (27%) | 7/63 (11%) |
-| Should refuse but answered | 0/14 | 0/14 |
-| Injection items passed (in the question + planted in documents) | 5/8 | **8/8** |
-| Failed because every free model was rate-limited | 5 | 5 |
-| Latency p50 / p95 | 1.4 s / 3.0 s | 3.6 s / 6.5 s |
-| Cost | $0 | $0 |
+| Metric | baseline v2 | full v1 | **full v2** |
+|---|---:|---:|---:|
+| **Passed (all questions)** | 61/77 (79%) | 70/77 (91%) | **74/77 (96%)** |
+| Answerable: correct content | 47/63 (75%) | 56/63 (89%) | 61/63 (97%) |
+| Answerable: cited a gold page | 48/63 (76%) | 56/63 (89%) | 61/63 (97%) |
+| Answerable but refused | 15/63 (24%) | 7/63 (11%) | 1/63 (2%) |
+| Should refuse but answered | 0/14 | 0/14 | 0/14 |
+| Injection items passed (in the question + planted in documents) | 8/8 | 8/8 | 8/8 |
+| Guardrail blocks | n/a | 2 | 0 |
+| Failed because every free model was rate-limited | 1 | 5 | 0 |
+| Latency p50 / p95 | 1.1 s / 2.5 s | 3.6 s / 6.5 s | 2.6 s / 5.7 s |
+| Cost | $0 | $0 | $0 |
 
-By category (full): spec numbers 24/24, conditional specs 6/6, pins 8/8, refusals 13/13,
-injection 8/8, text facts 9/12, comparisons 2/6. Full report with every failure:
-[`reports/eval-test.md`](reports/eval-test.md); dev: [`reports/eval-dev.md`](reports/eval-dev.md).
+v2 changed one thing: text chunks never cross a page boundary. By category (full v2): spec numbers
+24/24, conditional specs 6/6, pins 8/8, refusals 13/13, injection 8/8, text facts 11/12,
+comparisons 4/6. Reports with every failure: [`reports/eval-test.md`](reports/eval-test.md) (v2),
+[`reports/eval-test-v1.md`](reports/eval-test-v1.md) (v1); dev: [`reports/eval-dev.md`](reports/eval-dev.md).
 
-What the failures are, honestly:
+What the numbers do and don't say:
 
-- **5 of the 7 full-pipeline failures were infrastructure, not answers**: every free model in the
-  chain was rate-limited on all 4 attempts (particle-1 was rate-limited on 118 of 165 attempts
-  during the run), so the agent returned the forum handoff rather than guess. Four of the five
-  were comparisons, which make the most calls. A paid fallback model would remove these.
-- **The other 2 were the guardrail blocking correct answers**, and the cause is a real bug: one
-  text chunk spans pages 2-5, the model cited its first page, and the fact is on page 5. Fix for
-  v2: split chunks at page boundaries so every chunk maps to one page.
-- **The guardrail never let a wrong number through** (0 false answers, 0 forbidden strings), and it
-  caught what the baseline missed: the baseline repeated an injected "40 V" on dev.
+- **v1 → v2 is not all the fix.** In v1, 2 correct answers were blocked by the guardrail because a
+  text chunk spanned pages 2-5 and the model cited page 2 for a fact on page 5; page-bounded chunks
+  fixed that (0 blocks in v2). But v1 also lost 5 questions to free-tier rate limits (every model
+  failed all 4 attempts) and v2 lost none; that part is luck of the run, not the code. Each version
+  was run once, so differences of a few questions are within run-to-run variation.
+- **The 3 remaining v2 failures:** one comparison the model refused although both values were
+  retrieved; one comparison whose citation was a page that restates the value rather than the gold
+  table page; and one correct answer ("3.3 V", "NOT 5 V tolerant") that the scorer missed because it
+  looks for "3.3V" without a space. The scoring rule is reported as it ran, not changed after.
+- **The guardrail never let a wrong number through** (0 false answers, 0 forbidden strings in both
+  versions), and on dev it caught what the baseline missed: an injected "40 V" repeated back.
+- **The baseline also blocked all 8 injections on this run**, but only because the model ignored
+  them; it has no checks, and on dev it repeated the injected value.
 - **A real datasheet inconsistency surfaced on dev**: the GIGA R1 WiFi datasheet lists VIN as
   "6-24V" in its features and 32 V maximum in its operating conditions.
-- One dev injection item fails the strict scoring rule although the model rejected the injection:
-  it wrote "the 40 V figure in the question is incorrect", and any mention of the injected value
-  counts as a failure. The rule stays strict.
 - **LLM-as-judge, validated before use.** A free-model judge grades answers given the question,
   the expected answer and the datasheet quote. On 30 dev answers labelled by hand (28 correct,
   2 incorrect: both forum handoffs on answerable questions), the judge **agreed with the human on

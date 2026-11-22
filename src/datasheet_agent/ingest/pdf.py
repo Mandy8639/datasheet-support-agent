@@ -38,6 +38,7 @@ class Section:
     page_start: int
     page_end: int
     lines: list[str] = field(default_factory=list)
+    line_pages: list[int] = field(default_factory=list)  # page of each line (same length)
 
     @property
     def text(self) -> str:
@@ -161,6 +162,7 @@ def parse_pdf(path: Path) -> ParsedDoc:
                         sections.append(Section(obj["text"].strip(), level, page_no, page_no))
                     else:
                         current.lines.append(obj["text"])
+                        current.line_pages.append(page_no)
                         current.page_end = page_no
                     continue
                 raw = obj.extract()

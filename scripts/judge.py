@@ -35,7 +35,8 @@ def items_and_answers():
         json.loads(x)["id"]: json.loads(x)
         for x in (ROOT / "golden" / "dev.jsonl").read_text().splitlines()
     }
-    full = json.loads((ROOT / "reports" / "eval-dev.json").read_text())["full"]
+    # The judge was validated on the v1 dev answers; keep reading those.
+    full = json.loads((ROOT / "reports" / "eval-dev-v1.json").read_text())["full"]
     rows = [r for r in full if r["category"] in CATS]
     return [(dev[r["id"]], r) for r in rows]
 
