@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 3 of 7 done: retrieval measured. Next: the agent, tools and guardrail. Retrieval, agent and evaluation results will be
+**Status:** Phase 4 of 7 done: agent, tools and guardrail (tested offline with a scripted model). Next: real models with failover. Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license
@@ -86,6 +86,36 @@ What the numbers say, including what didn't work:
 - Cost: reranking runs a 278M-parameter cross-encoder locally; about 2 s per question on a
   laptop (Apple MPS), versus 0.15 s for dense alone. A production version would cache, shrink
   the candidate pool, or use a smaller reranker.
+
+## Agent, tools and guardrail (Phase 4)
+
+A LangGraph flow: `understand → retrieve → answer → guardrail`, with a direct refusal when the
+question names a board that isn't in the corpus (no model call is made).
+
+- **Three read-only tools**, enforced by an allowlist: `search_datasheets` (the Phase 3
+  per-board retriever), `get_spec` (spec-table rows) and `get_page` (a full page). They use the
+  `agent_ro` database role, which can't write. Any other tool name (for example a "delete" tool
+  named in an injected instruction) is refused and logged; at most 4 tool calls per question.
+- **Structured output**: the model must return `status`, a one- or two-sentence `answer` and
+  `citations` (SKU + page). Prompt: [`prompts/system.md`](prompts/system.md); its few-shot example
+  uses a made-up board so no evaluation data can leak in (tested).
+- **Deterministic guardrail** ([`agent/guardrail.py`](src/datasheet_agent/agent/guardrail.py)),
+  run on every answer. Any violation replaces the answer with a refusal and a pointer to the
+  Arduino Forum:
+
+| Rule | Check |
+|---|---|
+| R1 | an answer cites at least one page |
+| R2 | every cited page was actually retrieved |
+| R3 | every number in the answer is on a cited page, with a compatible unit (300 mA = 0.3 A); digits in board names, SKUs and part numbers are ignored |
+| R4 | cited boards are the boards the question asked about |
+| R5 | no internal canary markers in the output (prompt-leak check) |
+| R6 | no links or domains |
+| R7 | a question about a board not in the corpus is refused |
+
+Tests cover each rule with a passing and a failing case, the tool allowlist and call budget, and
+the whole graph with a scripted model (answer, blocked hallucination, rejected injected tool
+call, out-of-corpus refusal, tool-budget exhaustion), with no database or API needed.
 
 ## Run
 

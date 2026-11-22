@@ -101,8 +101,11 @@ def filtered(query: str, k: int, extra_aliases: tuple = ()) -> list[Hit]:
     return rerank(query, k, skus)
 
 
-def per_board(query: str, k: int, extra_aliases: tuple = ()) -> list[Hit]:
-    skus = understand(query, extra_aliases).skus
+def per_board(
+    query: str, k: int, extra_aliases: tuple = (), skus: list[str] | None = None
+) -> list[Hit]:
+    """skus: boards already known (e.g. from the agent's understand step); else detected."""
+    skus = skus if skus is not None else understand(query, extra_aliases).skus
     if len(skus) < 2:
         return rerank(query, k, skus or None)
     per = math.ceil(k / len(skus))
