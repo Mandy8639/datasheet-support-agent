@@ -136,3 +136,13 @@ def test_not_in_datasheet_becomes_refusal_with_reason():
 def test_numbers_in_ignores_model_numbers():
     nums = numbers_in("It uses an RP2040 and 802.11b/g/n, with a 3V3 rail and 5.0 V input.")
     assert [(n.raw, n.unit) for n in nums] == [("5.0", "V")]
+
+
+def test_hyphenated_model_names_are_not_values():
+    nums = numbers_in("The Test Board INJ-1 uses a Cortex-M4 and accepts 6-24 V.")
+    assert [(n.raw, n.unit) for n in nums] == [("6", None), ("24", "V")]
+
+
+def test_extra_aliases_strip_database_board_names():
+    nums = numbers_in("Test Board X9 max is 12 V", extra_aliases=(("Test Board X9", "ZZX9"),))
+    assert [(n.raw, n.unit) for n in nums] == [("12", "V")]

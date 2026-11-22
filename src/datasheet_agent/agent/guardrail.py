@@ -25,7 +25,11 @@ _CITE_MARK = re.compile(r"\[[^\]]*\]|\(?\b(?:p\.|page|pp\.)\s*\d+(?:\s*[-,]\s*\d
 _SKU = re.compile(r"\b(?:A|ABX|AKX|ASX|AFX|ZZT)[A-Z]*\d{5,6}[A-Z0-9]*\b", re.I)
 _UNIT_ALT = "|".join(sorted((re.escape(u) for u in _UNITS), key=len, reverse=True))
 # A number not glued to letters/dots (so "RP2040", "802.11b" and "3V3" are not numbers).
-_NUMBER = re.compile(rf"(?<![\w.])([+-]?\d+(?:\.\d+)?)(?:\s*({_UNIT_ALT}))?(?![\w.]*[a-zA-Z0-9])")
+# "INJ-1" or "Cortex-M4": a number glued to letters by a hyphen is a model name, not a value.
+_NUMBER = re.compile(
+    r"(?<![\w.])(?<![A-Za-z]-)([+-]?\d+(?:\.\d+)?)"
+    rf"(?:\s*({_UNIT_ALT}))?(?![\w.]*[a-zA-Z0-9])"
+)
 
 
 @dataclass
@@ -44,21 +48,21 @@ class GuardrailResult:
         return not self.violations
 
 
-def _strip_names(text: str) -> str:
+def _strip_names(text: str, extra_aliases: tuple = ()) -> str:
     """Remove board names, SKUs and citation markers, whose digits are not spec values."""
     t = _CITE_MARK.sub(" ", text)
     t = _SKU.sub(" ", t)
     low = f" {t} "
-    for alias, _ in board_aliases():
+    for alias, _ in board_aliases(tuple(extra_aliases)):
         low = re.sub(
             rf"(?i)(?<![\w]){re.escape(alias).replace(r'\ ', r'[\s-]+')}(?![\w])", " ", low
         )
     return low
 
 
-def numbers_in(text: str) -> list[Number]:
+def numbers_in(text: str, extra_aliases: tuple = ()) -> list[Number]:
     out = []
-    for m in _NUMBER.finditer(_strip_names(text).replace("−", "-")):
+    for m in _NUMBER.finditer(_strip_names(text, extra_aliases).replace("−", "-")):
         raw, unit = m.group(1), m.group(2)
         out.append(Number(float(raw), raw, unit))
     return out
@@ -106,7 +110,9 @@ def check(
     info: QueryInfo,
     seen_pages: set[tuple[str, int]],
     page_text: Callable[[str, int], str | None],
+    extra_aliases: tuple = (),
 ) -> GuardrailResult:
+    """extra_aliases: names of documents beyond sources.toml (e.g. anything in the database)."""
     res = GuardrailResult()
     text = answer.answer
     if _CANARY.search(text):
@@ -128,7 +134,7 @@ def check(
         for sku in sorted({s for s, _ in cites} - set(info.skus)):
             res.violations.append(f"R4 wrong_board {sku}")
     pages = [t for t in (page_text(s, p) for s, p in cites & seen_pages) if t]
-    for n in numbers_in(text):
+    for n in numbers_in(text, extra_aliases):
         if not any(_page_has(p, n) for p in pages):
             unit = f" {n.unit}" if n.unit else ""
             res.violations.append(f"R3 number_not_on_page {n.raw}{unit}")

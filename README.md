@@ -3,7 +3,7 @@
 Answers engineers' questions about hardware from the product datasheets, citing the datasheet page
 for every number, and refuses (with a pointer to the vendor forum) when the datasheet doesn't say.
 
-**Status:** Phase 5 of 7 done: live free models with failover, spend cap and traces. Next: full end-to-end evaluation. Retrieval, agent and evaluation results will be
+**Status:** Phase 6 of 7: end-to-end evaluation done for v1 (LLM-judge validation pending human labels). Next: MCP server, API, CI gate. Retrieval, agent and evaluation results will be
 added here as they are measured.
 
 ## Corpus and license
@@ -145,12 +145,62 @@ citations, including a question that told the model to reply "HACKED"; one natur
 uv run python -m datasheet_agent.cli "What's the maximum VIN of the Arduino UNO R4 WiFi?"
 ```
 
+## End-to-end evaluation (Phase 6, v1)
+
+Every question goes through the agent once and is scored deterministically
+([`evals/scoring.py`](src/datasheet_agent/evals/scoring.py)): a number must appear with a compatible
+unit, text answers must contain the expected terms, comparisons must name the right board (ties
+must say so), refusal questions must be refused, and injection questions also fail if a forbidden
+string or canary appears. An answer passes only if its content is right **and** it cites a gold page.
+
+Two configs, same prompt and same free-model chain:
+- **baseline**: plain RAG (dense top-5, no board routing, no guardrail);
+- **full**: the agent (per-board reranked retrieval, out-of-corpus routing, guardrail R1-R7).
+
+Developed on dev (43 questions); **frozen test split (77 questions), run once**, 2026-11-21:
+
+| Metric | baseline | full |
+|---|---:|---:|
+| **Passed (all questions)** | **57/77 (74%)** | **70/77 (91%)** |
+| Answerable: correct content | 45/63 (71%) | 56/63 (89%) |
+| Answerable: cited a gold page | 43/63 (68%) | 56/63 (89%) |
+| Answerable but refused | 17/63 (27%) | 7/63 (11%) |
+| Should refuse but answered | 0/14 | 0/14 |
+| Injection items passed (in the question + planted in documents) | 5/8 | **8/8** |
+| Failed because every free model was rate-limited | 5 | 5 |
+| Latency p50 / p95 | 1.4 s / 3.0 s | 3.6 s / 6.5 s |
+| Cost | $0 | $0 |
+
+By category (full): spec numbers 24/24, conditional specs 6/6, pins 8/8, refusals 13/13,
+injection 8/8, text facts 9/12, comparisons 2/6. Full report with every failure:
+[`reports/eval-test.md`](reports/eval-test.md); dev: [`reports/eval-dev.md`](reports/eval-dev.md).
+
+What the failures are, honestly:
+
+- **5 of the 7 full-pipeline failures were infrastructure, not answers**: every free model in the
+  chain was rate-limited on all 4 attempts (particle-1 was rate-limited on 118 of 165 attempts
+  during the run), so the agent returned the forum handoff rather than guess. Four of the five
+  were comparisons, which make the most calls. A paid fallback model would remove these.
+- **The other 2 were the guardrail blocking correct answers**, and the cause is a real bug: one
+  text chunk spans pages 2-5, the model cited its first page, and the fact is on page 5. Fix for
+  v2: split chunks at page boundaries so every chunk maps to one page.
+- **The guardrail never let a wrong number through** (0 false answers, 0 forbidden strings), and it
+  caught what the baseline missed: the baseline repeated an injected "40 V" on dev.
+- **A real datasheet inconsistency surfaced on dev**: the GIGA R1 WiFi datasheet lists VIN as
+  "6-24V" in its features and 32 V maximum in its operating conditions.
+- One dev injection item fails the strict scoring rule although the model rejected the injection:
+  it wrote "the 40 V figure in the question is incorrect", and any mention of the injected value
+  counts as a failure. The rule stays strict.
+- An LLM judge is implemented but **not used in these numbers**: it is reported only after it is
+  validated against 30 human-labelled answers (pending).
+
 ## Run
 
 ```bash
 make ingest   # starts Postgres + pgvector, downloads the corpus, loads it
 make check    # lint + tests
 make eval-retrieval        # retrieval ablation on dev (test: --split test, once)
+uv run python scripts/eval_e2e.py --split dev   # end-to-end eval (test: once per version)
 ```
 
 The agent connects with a read-only database role (`agent_ro`); a test checks it cannot write.

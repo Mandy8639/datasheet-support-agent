@@ -79,3 +79,7 @@ CREATE TABLE IF NOT EXISTS chunks (
 CREATE INDEX IF NOT EXISTS chunks_tsv_idx ON chunks USING gin (tsv);
 CREATE INDEX IF NOT EXISTS spec_rows_doc_idx ON spec_rows (doc_id);
 CREATE INDEX IF NOT EXISTS pin_rows_doc_idx ON pin_rows (doc_id);
+
+-- Synthetic test-only documents (prompt-injection fixtures) are flagged, loaded only during
+-- evaluation runs and removed afterwards.
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS is_fixture boolean NOT NULL DEFAULT false;

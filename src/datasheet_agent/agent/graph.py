@@ -12,7 +12,7 @@ from typing import TypedDict
 from langgraph.graph import END, StateGraph
 
 from datasheet_agent.agent import tools
-from datasheet_agent.agent.guardrail import apply, check
+from datasheet_agent.agent.guardrail import GuardrailResult, apply, check
 from datasheet_agent.agent.llm import LLM, ModelTurn
 from datasheet_agent.agent.schema import HANDOFF, ModelAnswer, Response
 from datasheet_agent.db import agent_conn
@@ -66,8 +66,17 @@ def seen_pages(hits: list[Hit]) -> set[tuple[str, int]]:
     return {(h.sku, p) for h in hits for p in range(h.page_no, h.page_end + 1)}
 
 
-def build(llm: LLM, retrieve=tools.search_datasheets, page_text=tools.get_page, aliases=db_aliases):
-    """Compile the graph. Dependencies are injectable so tests run without models or a DB."""
+def build(
+    llm: LLM,
+    retrieve=tools.search_datasheets,
+    page_text=tools.get_page,
+    aliases=db_aliases,
+    use_guardrail: bool = True,
+    route_unknown: bool = True,
+):
+    """Compile the graph. Dependencies are injectable so tests run without models or a DB.
+
+    use_guardrail / route_unknown can be turned off for the plain-RAG evaluation baseline."""
 
     def n_understand(state: State) -> State:
         return {
@@ -78,7 +87,8 @@ def build(llm: LLM, retrieve=tools.search_datasheets, page_text=tools.get_page, 
 
     def route(state: State) -> str:
         info = state["info"]
-        return "refuse" if info.unknown_mentions and not info.skus else "retrieve"
+        unknown = route_unknown and info.unknown_mentions and not info.skus
+        return "refuse" if unknown else "retrieve"
 
     def n_refuse(state: State) -> State:
         return {
@@ -128,7 +138,9 @@ def build(llm: LLM, retrieve=tools.search_datasheets, page_text=tools.get_page, 
         }
 
     def n_guardrail(state: State) -> State:
-        result = check(state["answer"], state["info"], state["seen"], page_text)
+        if not use_guardrail:
+            return {"response": apply(state["answer"], GuardrailResult())}
+        result = check(state["answer"], state["info"], state["seen"], page_text, aliases())
         return {"response": apply(state["answer"], result)}
 
     g = StateGraph(State)
@@ -146,5 +158,5 @@ def build(llm: LLM, retrieve=tools.search_datasheets, page_text=tools.get_page, 
     return g.compile()
 
 
-def ask(question: str, llm: LLM, **deps) -> State:
-    return build(llm, **deps).invoke({"question": question})
+def ask(question: str, llm: LLM, graph=None, **deps) -> State:
+    return (graph or build(llm, **deps)).invoke({"question": question})

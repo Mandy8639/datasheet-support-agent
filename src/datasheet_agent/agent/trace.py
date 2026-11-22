@@ -32,6 +32,8 @@ def record(state: dict, attempts: list[dict], started: float, trace_dir: Path = 
         "violations": resp.violations,
         "citations": [c.model_dump() for c in resp.citations],
         "answer": resp.text,
+        # What the model said before the guardrail (differs from `answer` when blocked).
+        "model_answer": state["answer"].model_dump() if state.get("answer") else None,
         "latency_ms": int((time.monotonic() - started) * 1000),
     }
     trace_dir.mkdir(parents=True, exist_ok=True)
